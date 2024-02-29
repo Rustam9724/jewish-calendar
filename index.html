@@ -468,7 +468,7 @@
             'Сегодня: ',
             (today.getJMonth()==cal.getJMonth() && today.getJYear()==cal.getJYear()
                 ?
-                (todayGREG.getDate() + " " + GREG_MONTHS_ROD[todayGREG.getMonth()] + " " + todayGREG.getFullYear() + " - " + today.getJDate() + " " + JEWISH_MONTHS_ROD[leap][today.getJMonth()] + " " + today.getJYear())
+                (todayGREG.getDate() + " " + GREG_MONTHS_ROD[todayGREG.getMonth()] + " " + todayGREG.getFullYear() + " - " + Math.ceil(today.getJDate()) + " " + JEWISH_MONTHS_ROD[leap][today.getJMonth()] + " " + today.getJYear())
                 :
                 (todayGREG.getDate() + " " + GREG_MONTHS_ROD[todayGREG.getMonth()] + " " + todayGREG.getFullYear() + " - " + '<u><a href="javascript:setToday()">' + Math.ceil(today.getJDate()) + " " + JEWISH_MONTHS_ROD[leap][today.getJMonth()] + " " + today.getJYear() + '</a></u>')
             ),
@@ -617,7 +617,7 @@ for(var i=0; i<weeks; i++)
             var holy = getHolyday(day, cal.getJMonth(), j, cal.getJYearInfo().days);
             var format = gregorian.getFullYear()==cal.getGYear()==1? 3 : 4;
 
-            writeln('<td width="14%" valign=top style="background-color:'+(isToday? 'yellow' : (j == SAT ? 'rgba(205, 92, 92, 0.75)':'#f6f0e2'))+';padding: 5px;height: 115px; border-bottom:'+(isToday?'5px solid red':'none')+'">');
+            writeln('<td width="14%" valign=top style="background-color:'+(isToday ? 'yellow' : (j == SAT ? 'rgba(205, 92, 92, 0.75)' : '#f6f0e2'))+';padding: 5px;height: 115px; border-bottom:'+(isToday?'5px solid red':'none')+'">');
             writeln('<table border=0 width=100% height=100%>');
             writeln('<tr>');
             writeln('<td align=left valign=top ><font size="4" style="font-weight:bolder;font-family:EB Garamond,serif;">', date2str(gregorian, format), '</font></td>');
