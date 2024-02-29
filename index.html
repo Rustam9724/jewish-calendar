@@ -10,8 +10,8 @@
     
     <!---------------------------------------------------------------->
     
-    <script language="JavaScript" src="https://sinagoga.pro/jcalendar/jcalendar.js"></script>
-    <script language="JavaScript" src="https://sinagoga.pro/jcalendar/holidays.ru.js"></script>
+    <script lanuage="JavaScript" src="./jscalendar.js"></script>
+    <script lanuage="JavaScript" src="./holidays.js"></script>
     
     <!---------------------------------------------------------------->
     
@@ -487,12 +487,14 @@
         '<option value='+IYAR+'>Лаг ба-Омер (18 Ияра)</option>',
         '<option value='+IYAR+'>День Иерусалима (28 Ияра)</option>',
         '<option value='+SIVAN+'>Шавуот (6 Сивана)</option>',
+        '<option value='+TAMUZ+'>Пост (17 Тамуза)</option>',
         '<option value='+AV+'>Пост 9-Ава</option>',
         '<option value='+TISHREY+'>Рош hа-Шана (1-2 Тишрея)</option>',
+        '<option value='+TISHREY+'>Пост Гедальи (4 Тишрея)</option>',
         '<option value='+TISHREY+'>Йом-Кипур (10 Тишрея)</option>',
         '<option value='+TISHREY+'>Суккот (15-21 Тишрея)</option>',
-        '<option value='+TISHREY+'>hошана Раба (21 Тишрея)</option>',
         '<option value='+TISHREY+'>Шмини Ацерет (22 Тишрея)</option>',
+        '<option value='+TISHREY+'>hошана Раба (21 Тишрея)</option>',
         '<option value='+KISLEV+'>Ханука (25 Кислева - 2/3 Тевета)</option>',
         '<option value='+SHEVAT+'>Ту би-Шват (15 Швата)</option>',
         '<option value='+(leap?ADAR_2:ADAR)+'>День рождения и смерти Мошэ Рабэйну (7 Адара)</option>',
@@ -595,7 +597,7 @@ writeln('<table width=98% border=2 align=center bgcolor=white style=border-color
 
 {	writeln('<tr>');
     for(var j=SUN; j<=SAT; j++)
-    {	writeln('<th width="14%" bgcolor="#b28540" style="color:white;padding:5px;"><tt><b style="text-transform: uppercase">');
+    {	writeln(`<th width="14%" bgcolor=${j === 6 ? 'yellow' : '#b28540'}" style="color:white;padding:5px;"><tt><b style="text-transform: uppercase">`);
         writeln(WEEKDAYS[j]);
         writeln('</b></tt></th>');
     }
@@ -704,33 +706,6 @@ writeln('</table>');
             jewishMonthOfConverter.push(`<option>${allJewishMonthes[i]}</option>`)
         }
 
-        // writeln(
-        //     '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 40px">',
-        //         '<h2 style="font-size: 20px; color: #0e53b2; padding-bottom: 10px; border-bottom: 3px solid #0e53b2;">Конвертер дат</h2>',
-        //         '<div>',
-        //             '<select style="padding: 7px 8px 6px; font-size: 27px; color: 001a7c; border: 1px solid #dcdcdc;">',
-        //                 `${gregorianDaysOfConverter}`,
-        //             '</select>',
-        //             '<select style="padding: 7px 8px 6px; font-size: 27px; color: 001a7c; border: 1px solid #dcdcdc;">',
-        //                 `${grigorianMonthOfConverter}`,
-        //             '</select>',
-        //             '<input type="number" style="padding: 8px 8px 6px; font-size: 27px; color: 001a7c; border: 1px solid #dcdcdc; max-width: 95px;" value="2024"/>',
-        //         '</div>',
-        //         '<div style="display: flex; column-gap: 26px; justify-content: center">',
-        //             '<p style="padding: 6px 10px; font-size: 36px; color: white; background-color: #b38d39; max-width: 38px; text-align: center; cursor: pointer">&darr;</p>',
-        //             '<p style="padding: 6px 10px; font-size: 36px; color: white; background-color: #b38d39; max-width: 38px;  text-align: center; cursor: pointer">&uarr;</p>',
-        //         '</div>', 
-        //         '<div>',
-        //             '<select style="padding: 7px 8px 6px; font-size: 27px; color: #a91313; border: 1px solid #dcdcdc;">',
-        //                 `${jewishDaysOfConverter}`,
-        //             '</select>',
-        //             '<select style="padding: 7px 8px 6px; font-size: 27px; color: #a91313; border: 1px solid #dcdcdc;">',
-        //                 `${jewishMonthOfConverter}`,
-        //             '</select>',
-        //             '<input type="number" style="padding: 8px 8px 6px; font-size: 27px; color: 001a7c; border: 1px solid #dcdcdc; max-width: 95px;" value="5784"/>',
-        //         '</div>',
-        //     '</div>',
-        // )
     }
     </script>
     
