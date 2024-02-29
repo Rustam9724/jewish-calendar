@@ -1,0 +1,736 @@
+<style type="text/css">
+    a.tit, a.tit:visited {text-decoration:none; color:black}
+    </style>
+    
+    <!---------------------------------------------------------------->
+    
+    <div style="position:absolute; left:0; top:0; margin:5px; font-size:14px">
+    <div id="busy" style="visibility:hidden; color:green; margin-top:0">минуточку..</div>
+    </div>
+    
+    <!---------------------------------------------------------------->
+    
+    <script language="JavaScript" src="https://sinagoga.pro/jcalendar/jcalendar.js"></script>
+    <script language="JavaScript" src="https://sinagoga.pro/jcalendar/holidays.ru.js"></script>
+    
+    <!---------------------------------------------------------------->
+    
+    <script language="JavaScript">
+    
+    /* CONSTANTS */
+    /* browser-dependent:no language-dependent:yes */
+    
+    var JAN=0,FEB=1,MAR=2,APR=3,MAY=4,JUN=5,JUL=6,AUG=7,SEP=8,OCT=9,NOV=10,DEC=11;
+    
+    var WEEKDAYS = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
+    var GREG_MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+    var GREG_MONTHS_ROD = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"];
+    var GREG_MONTHS_SHORT = ["Янв","Фев","Мар","Апр","Мая","Июн","Июл","Авг","Сен","Окт","Нояб","Дек"];
+    var JEWISH_MONTHS =
+        [ ["","Нисан","Ияр","Сиван","Тамуз","Ав","Элуль","Тишрей","Хешван","Кислев","Тевет","Шват","Адар"],
+          ["","Нисан","Ияр","Сиван","Тамуз","Ав","Элуль","Тишрей","Хешван","Кислев","Тевет","Шват","Адар I","Адар II"] ];
+    var JEWISH_MONTHS_ROD =
+        [ ["","Нисана","Ияра","Сивана","Тамуза","Ава","Элуля","Тишрея","Хешвана","Кислева","Тевета","Швата","Адара"],
+          ["","Нисана","Ияра","Сивана","Тамуза","Ава","Элуля","Тишрея","Хешвана","Кислева","Тевета","Швата","Адара I","Адара II"] ];
+    var ZODIAC = ["","Овен","Телец","Близнецы","Рак","Лев","Дева","Весы","Скорпион","Стрелец","Козерог","Водолей","Рыбы","Рыбы"];
+    
+    var BC = "до н.э.";
+    var AD = "н.э.";
+    var BCr = "до с.м.";
+    
+    var ENTER_JEWISH_YEAR = 'Введите еврейский год';
+    var ENTER_GREGORIAN_YEAR = 'Введите григорианский год';
+    var DOWNLOAD = 'download.ru.html';
+    var COOKIE_ERROR = 'Could not set Cookie.\nWhether it turned off, or your browser does not support it.\n- - -\nНе удалось установить "Cookie".\nЛибо оно выключено, либо ваш browser не поддерживает это.';
+    
+    </script>
+    
+    <!---------------------------------------------------------------->
+    
+    <script language="JavaScript">
+    
+    /* function date2str(date, format) */
+    /* browser-dependent:no language-dependent:no */
+    
+    function date2str(date, format)
+    {	/* example of format==0 - Sat 7 Сентября 2002 */
+        /* example of format==1 - Sat 7 Сентября 2002 18:54:33 */
+        /* example of format==2 - 500 н.э. */
+        /* example of format==3 - 7 Сен */
+        /* example of format==4 - 7 Сен 2002 */
+    
+        /* for year 1BC method Date.getFullYear() return 0 (there is no year "0" - 1BC immediately followed by 1AD) */
+        var yearAsString;
+        {	var year = date.getFullYear();
+    
+            if( year<=0 )
+                yearAsString = (-year+1) + " " + BC;
+            else if( year>=1 && year<=999 )
+                yearAsString = year + " " + AD;
+            else
+                yearAsString = year + "";
+        }
+    
+        if( format==0 || format==1 )
+        {	var d =	WEEKDAYS[date.getDay()] + " " +
+                    date.getDate() + " " +
+                    GREG_MONTHS_ROD[date.getMonth()] + " " +
+                    yearAsString;
+            if(format==1)
+            {	var h=date.getHours(), m=date.getMinutes(), s=date.getSeconds();
+                d += " " + h + ":" + (m<10? "0" : "") + m + ":" + (s<10? "0" : "") + s;
+            }
+    
+            return d;
+        }	else if( format==2 )
+        {	return yearAsString;
+        }	else if( format==3 )
+        {	return date.getDate()+' '+GREG_MONTHS_SHORT[date.getMonth()];
+        }	else // format==4
+        {	return date.getDate()+' '+GREG_MONTHS_SHORT[date.getMonth()]+' '+(date.getYear()<=0? (-date.getYear()+1)+' '+BC : date.getYear());
+        }
+    }
+    
+    </script>
+    
+    <!---------------------------------------------------------------->
+    
+    <script language="JavaScript">
+    
+    /* cookies */
+    /* browser-dependent:no language-dependent:no */
+    
+    function setCookie(name, value, expires, path, domain, secure)
+    {	var c = name + '=' + escape(value);
+        if (!value)  expires = new Date(1970,0,1); // delete this cookie by making it expired
+        if (expires) c += ';expires=' + expires.toGMTString();
+        if (path)    c += ';path='    + path;
+        if (domain)  c += ';domain='  + domain;
+        if (secure)  c += ';secure';
+        document.cookie = c;
+    }
+    
+    function getCookie(name)
+    {	var from = document.cookie.indexOf(name+'=');
+        if (from==-1) return '';
+        var to = (document.cookie+';').indexOf(';', from+name.length+1);
+        return unescape( document.cookie.substring(from+name.length+1, to) );
+    }
+    
+    setCookie('cookieEnabled', 'yes');
+    var cookieEnabled = getCookie('cookieEnabled') == 'yes';
+    setCookie('cookieEnabled', '');
+    
+    </script>
+    
+    <!---------------------------------------------------------------->
+    
+    <script language="JavaScript">
+    
+    /* event handlers */
+    /* browser-dependent:no language-dependent:no */
+    
+    var downloadWindow;
+    
+    function openDownloadWindow()
+    {	downloadWindow = window.open
+        (	DOWNLOAD,
+            'downloadWindow',
+            'left='+(screen.width/6)		+ ',' +
+            'top='+(screen.height/6)		+ ',' +
+            'width='+(screen.width/2)		+ ',' +
+            'height='+(screen.height/2)		+ ',' +
+            'status=no'						+ ',' +
+            'toolbar=no'					+ ',' +
+            'resizable=yes'					+ ',' +
+            'scrollbars=yes'				+ ',' +
+            'directories=no'				+ ',' +
+            'location=no'					+ ',' +
+            'menubar=no'
+        );
+    }
+    
+    function setTip(obj, tip)
+    {	window.status = tip;
+        obj.onmouseover = function()
+        {	window.status = tip;
+            return true;
+        };
+        obj.onmouseout = function()
+        {	window.status = '';
+            return true;
+        };
+        return true;
+    }
+    
+    function setToday()
+    {	var g = gregToJewish( new Date() );
+        if( getCookie("shana") != g.year || getCookie("hodesh") != g.month )
+        {	busy();
+            setCookie("shana", g.year);
+            setCookie("hodesh", g.month);
+            setTimeout('document.location.reload()', 1);
+        }
+    }
+    
+    function changeJYear(jyear)
+    {	if (!cookieEnabled) return alert(COOKIE_ERROR);
+    
+        if (jyear==null || jyear=='') return;
+        jyear = parseInt(jyear);
+        if (isNaN(jyear)) return;
+        if (jyear < 0) jyear++; // "-1" == "1BCreation"
+        if (jyear == cal.getJYear()) return;
+        if (jyear < -200 || jyear > 20000) return;
+    
+        busy();
+    
+        setCookie("shana", jyear);
+        setTimeout('document.location.reload()', 1);
+    }
+    
+    function changeGYear(gyear)
+    {	if (!cookieEnabled) return alert(COOKIE_ERROR);
+    
+        if (gyear==null || gyear=='') return;
+        gyear = parseInt(gyear);
+        if (isNaN(gyear)) return;
+        if (gyear < 0) gyear++; // "-1" == "1BC"
+        if (gyear == cal.getGYear()) return;
+        if (gyear < -3955 || gyear > 16239) return;
+    
+        busy();
+    
+        cal.setGregorian(gyear, cal.getGMonth()+1, 1);
+        var jyear = cal.getJYear();
+        var jmonth = cal.getJMonth();
+        setCookie("shana", jyear);
+        setCookie("hodesh", jmonth);
+        setTimeout('document.location.reload()', 1);
+    }
+    
+    function incJYear(steps)
+    {	if (!steps) steps = 1;
+        var y = cal.getJYear();
+        if (y<=0) y--;
+        y += steps;
+        if (y==0 && steps>0) y++;
+        changeJYear( '' + y );
+    }
+    
+    function incGYear(steps)
+    {	if (!steps) steps = 1;
+        var y = cal.getGYear();
+        if (y<=0) y--;
+        y += steps;
+        if (y==0 && steps>0) y++;
+        changeGYear( '' + y );
+    }
+    
+    function enterJYear()
+    {	changeJYear( prompt(ENTER_JEWISH_YEAR+':', cal.getJYear()) );
+    }
+    
+    function enterGYear()
+    {	changeGYear( prompt(ENTER_GREGORIAN_YEAR+':', cal.getGYear()) );
+    }
+    
+    function changeJMonth(jmonth)
+    {	if (!cookieEnabled) return alert(COOKIE_ERROR);
+        if (jmonth == cal.getJMonth()) return hideAll();
+        busy();
+    
+        setCookie("hodesh", jmonth);
+        setTimeout('document.location.reload()', 1);
+    }
+    
+    function changeGMonth(gmonth)
+    {	if (!cookieEnabled) return alert(COOKIE_ERROR);
+        if (gmonth == cal.getGMonth()) return hideAll();
+        busy();
+    
+        cal.setGregorian(cal.getGYear(), gmonth, 1);
+    
+        if( cal.getJDate() != 1 )
+        {	var offsetDays = cal.getJMonthInfo().days - cal.getJDate() + 1;
+            cal.setGregorian( (new Date(cal.getGregorian().getTime()+offsetDays*24*60*60*1000)) );
+        }
+    
+        setCookie("hodesh", cal.getJMonth());
+        setCookie("shana", cal.getJYear());
+        setTimeout('document.location.reload()', 1);
+    }
+    
+    function incJMonth(steps) // steps can be +1 or -1
+    {	if (!cookieEnabled) return alert(COOKIE_ERROR);
+        busy();
+    
+        if( steps<0 )
+        {	cal.setGregorian( cal.getGregorian().getTime() - 15*24*60*60*1000 );
+        }	else
+        {	cal.setGregorian( cal.getGregorian().getTime() + cal.getJMonthInfo().days*24*60*60*1000 );
+        }
+    
+        setCookie("hodesh", cal.getJMonth());
+        setCookie("shana", cal.getJYear());
+        setTimeout('document.location.reload()', 1);
+    }
+    
+    function incGMonth(steps)
+    {	incJMonth(steps);
+    }
+    
+    ///////////////////////////////////////
+    
+    function showJMonthsMenu(frame, left) // must be called without parameters to open menu
+    {	var TOTAL_FRAMES = 25;
+        var obj = document.getElementById("jmmenu").style;
+    
+        if(!frame) // start animation
+        {	if( document.body && document.body.clientWidth ) // msie 5 && opera 6
+                obj.left = Math.floor(document.body.clientWidth * 3 / 4 - 20);
+            else if( window.innerWidth ) // netscape 6
+                obj.left = Math.floor(innerWidth * 3 / 4 - 20);
+            else // browser was not identified
+                obj.left = 10;
+    
+            obj.clip = 'rect(0,0,0,0)'; // rect(top,right,bottom,left)
+            obj.visibility = 'visible';
+            if(this.timeoutMenu) clearTimeout(timeoutMenu);
+            timeoutMenu = setTimeout('showJMonthsMenu(1,'+parseInt(obj.left)+')', 2);
+        }	else if(frame == TOTAL_FRAMES) // stop
+        {	obj.clip = 'rect(auto,auto,auto,auto)';
+            obj.left = parseInt(left);
+        }	else
+        {	obj.clip = 'rect(0,10000,' +
+                Math.floor(frame*400/TOTAL_FRAMES) + ',' +
+                (100 - Math.floor(frame*100/TOTAL_FRAMES)) + ')';
+            obj.left = left - (100 - Math.floor(frame*100/TOTAL_FRAMES));
+            timeoutMenu = setTimeout('showJMonthsMenu('+(frame+1)+','+left+')', 2);
+        }
+    }
+    
+    function showGMonthsMenu(frame, left) // must be called without parameters to open menu
+    {	var TOTAL_FRAMES = 25;
+        var obj = document.getElementById("gmmenu").style;
+    
+        if(!frame) // start animation
+        {	if( document.body && document.body.clientWidth ) // msie 5 && opera 6
+                obj.left = Math.floor(document.body.clientWidth / 4 - 20);
+            else if( window.innerWidth ) // netscape 6
+                obj.left = Math.floor(innerWidth / 4 - 20);
+            else // browser was not identified
+                obj.left = 10;
+    
+            obj.clip = 'rect(0,0,0,0)'; // rect(top,right,bottom,left)
+            obj.visibility = 'visible';
+            if(this.timeoutMenu) clearTimeout(timeoutMenu);
+            timeoutMenu = setTimeout('showGMonthsMenu(1,'+parseInt(obj.left)+')', 2);
+        }	else if(frame == TOTAL_FRAMES) // stop
+        {	obj.clip = 'rect(auto,auto,auto,auto)';
+            obj.left = parseInt(left);
+        }	else
+        {	obj.clip = 'rect(0,10000,' +
+                Math.floor(frame*400/TOTAL_FRAMES) + ',' +
+                (100 - Math.floor(frame*100/TOTAL_FRAMES)) + ')';
+            obj.left = left - (100 - Math.floor(frame*100/TOTAL_FRAMES));
+            timeoutMenu = setTimeout('showGMonthsMenu('+(frame+1)+','+left+')', 2);
+        }
+    }
+    
+    function showDialog()
+    {	var w, h, sl, st; // width & height of the window, scroll-left, scroll-top
+    
+        if( document.body && document.body.clientWidth )
+        {	// msie 5 && opera 6
+            w = document.body.clientWidth;
+            h = document.body.clientHeight;
+            sl = document.body.scrollLeft;
+            st = document.body.scrollTop;
+        }	else if( window.innerWidth )
+        {	// netscape 6
+            w = innerWidth;
+            h = innerHeight;
+            sl = scrollX;
+            st = scrollY;
+        }	else
+        {	// browser was not identified
+            w = 200;
+            h = 200;
+            sl = 20;
+            st = 20;
+        }
+    
+        with( document.getElementById("dialog1") )
+        {	style.left   = Math.floor((w-offsetWidth)/2  + sl) + "px";
+            style.top    = Math.floor((h-offsetHeight)/2 + st) + "px";
+            style.visibility = "visible";
+        }
+    
+        window.onscroll = showDialog; // in order to update position of dialog on screen while scrolling (currently it takes effect only in MSIE)
+    }
+    
+    function busy()
+    {	document.getElementById("busy").style.visibility = "visible";
+    }
+    
+    function hideAll()
+    {	window.onscroll = null;
+    
+        var jmmenu = document.getElementById("jmmenu").style;
+        var gmmenu = document.getElementById("gmmenu").style;
+        var dialog = document.getElementById("dialog1").style;
+    
+        jmmenu.visibility = "hidden";
+        gmmenu.visibility = "hidden";
+        dialog.visibility = "hidden";
+    
+        jmmenu.left = "0px";
+        gmmenu.left = "0px";
+        dialog.left = "0px";
+        dialog.top = "0px";
+    }
+    
+    function hideAllButDialog()
+    {	var jmmenu = document.getElementById("jmmenu").style;
+        var gmmenu = document.getElementById("gmmenu").style;
+    
+        jmmenu.visibility = "hidden";
+        gmmenu.visibility = "hidden";
+    
+        jmmenu.left = "0px";
+        gmmenu.left = "0px";
+    }
+    
+    function keyPress()
+    {	var ESC = 27;
+        if(event.keyCode == ESC) hideAll();
+    }
+    
+    window.onscroll = null;
+    window.onresize = hideAll;
+    document.onmouseup = hideAllButDialog;
+    document.onkeypress = keyPress;
+    
+    </script>
+    
+    <!---------------------------------------------------------------->
+    
+    <script language="JavaScript">
+    
+    /* calendar itself */
+    /* uses "jcalendar.js", "holidays.ru.js" */
+    /* browser-dependent:no language-dependent:yes */
+    
+    var today;
+    var cal; // year and month on which to create the calendar
+    
+    {	/* set variables */
+    
+        today = new JCalendar(new Date());
+    
+        var jyear;
+        var jmonth;
+    
+        {	// load jyear and jmonth from cookies or set them with today
+    
+            jyear = getCookie("shana");
+            if( !jyear )
+            {	jyear = today.getJYear();
+                setCookie("shana", jyear);
+            }	else
+            {	jyear = parseInt(jyear);
+            }
+    
+            jmonth = getCookie("hodesh");
+            if( !jmonth )
+            {	jmonth = today.getJMonth();
+                setCookie("hodesh", jmonth);
+            }	else
+            {	jmonth = parseInt(jmonth);
+            }
+        }
+    
+        cal = new JCalendar(jyear, jmonth, 1);
+    }
+    
+    with( document )
+    {	/* today & holidays */
+    
+        var leap = cal.getJYearInfo().months==12? 0 : 1;
+    
+        writeln('<table border=0 align=center><tr>');
+    
+        // today
+        let todayGREG = new Date();
+        writeln
+        (	'<td>',
+            'Сегодня: ',
+            (today.getJMonth()==cal.getJMonth() && today.getJYear()==cal.getJYear()
+                ?
+                (todayGREG.getDate() + " " + GREG_MONTHS_ROD[todayGREG.getMonth()] + " " + todayGREG.getFullYear() + " - " + today.getJDate() + " " + JEWISH_MONTHS_ROD[leap][today.getJMonth()] + " " + today.getJYear())
+                :
+                (todayGREG.getDate() + " " + GREG_MONTHS_ROD[todayGREG.getMonth()] + " " + todayGREG.getFullYear() + " - " + '<u><a href="javascript:setToday()">' + Math.ceil(today.getJDate()) + " " + JEWISH_MONTHS_ROD[leap][today.getJMonth()] + " " + today.getJYear() + '</a></u>')
+            ),
+            '</td>'
+        );
+    
+        // space separator
+        writeln('<td width=15>&nbsp;</td>');
+    
+        // holidays
+        writeln(
+        '<td align=right><select size="1" name="gotodate" style="background-color:royalblue; color:white; font-size:14px" onChange="if(value>0)changeJMonth(value)">',
+        '<option value=0>Переход на дату</option>',
+        '<option value='+NISAN+'>Песах (15-22 Нисана)</option>',
+        '<option value='+IYAR+'>День независимости (5 Ияра)</option>',
+        '<option value='+IYAR+'>Лаг ба-Омер (18 Ияра)</option>',
+        '<option value='+IYAR+'>День Иерусалима (28 Ияра)</option>',
+        '<option value='+SIVAN+'>Шавуот (6 Сивана)</option>',
+        '<option value='+AV+'>Пост 9-Ава</option>',
+        '<option value='+TISHREY+'>Рош hа-Шана (1-2 Тишрея)</option>',
+        '<option value='+TISHREY+'>Йом-Кипур (10 Тишрея)</option>',
+        '<option value='+TISHREY+'>Суккот (15-21 Тишрея)</option>',
+        '<option value='+TISHREY+'>hошана Раба (21 Тишрея)</option>',
+        '<option value='+TISHREY+'>Шмини Ацерет (22 Тишрея)</option>',
+        '<option value='+KISLEV+'>Ханука (25 Кислева - 2/3 Тевета)</option>',
+        '<option value='+SHEVAT+'>Ту би-Шват (15 Швата)</option>',
+        '<option value='+(leap?ADAR_2:ADAR)+'>День рождения и смерти Мошэ Рабэйну (7 Адара)</option>',
+        '<option value='+(leap?ADAR_2:ADAR)+'>Пурим (14 Адара)</option>',
+        '</select></td>'
+        );
+    
+        writeln('</tr></table><br>');
+    }
+    
+    with( document )
+    {	/* title of calendar */
+    
+        var leap = cal.getJYearInfo().months==12? 0 : 1;
+    
+        writeln('<table width="100%" border="0"><tr align="center">');
+    
+        // gregorian title
+        writeln('<td width="50%">');
+    
+        // menu for gregorian months
+        writeln('<div id="gmmenu" style="width:20ex; position:absolute; visibility:hidden"><br>');
+        for(var i=JAN; i<=DEC; i++)
+        {	if( i!=cal.getGMonth() )
+            {	writeln('<div style="width:11ex; background-color:#b28540; color:white; border:solid black 1px; font-weight:400; paddin:0; margin:0; cursor:hand" onClick="changeGMonth('+i+')" onMouseOver="style.backgroundColor=\'#f6f0e2\';style.color=\'black\';style.borderColor=\'white\';style.fontWeight=\'800\'" onMouseOut="style.backgroundColor=\'#b28540\';style.color=\'white\';style.borderColor=\'black\';style.fontWeight=\'400\'">', GREG_MONTHS[i], '</div>');
+            }	else
+            {	writeln('<div style="width:11ex; background-color:white; color:red; border:solid black 1px; font-weight:400; paddin:0; margin:0; cursor:default">', GREG_MONTHS[i], '</div>');
+            }
+        }
+        writeln('</div>');
+    
+        // gregorian month
+        writeln(
+        '<a href="javascript:incGMonth(-1)" class=tit title="1 месяц назад" onmouseover="return setTip(this, \'1 месяц назад\')"><button type="submit" class="button button-contactForm" style="height: 22px;width: 24px;padding: 0;">«</button></a> ',
+        '<strong><u><a href="javascript:showGMonthsMenu()" class=tit onmouseover="return setTip(this, \'Выбрать грегорианский месяц\')">',
+        GREG_MONTHS[cal.getGMonth()],
+        '</a></u></strong>',
+        ' <a href="javascript:incGMonth(+1)" class=tit title="1 месяц вперёд" onmouseover="return setTip(this, \'1 месяц вперёд\')"><button type="submit" class="button button-contactForm" style="height: 22px;width: 24px;padding: 0;">»</button></a>'
+        );
+    
+        // gregorian year
+        writeln(
+        ' — <a href="javascript:incGYear(-1)" class=tit title="1 год назад" onmouseover="return setTip(this, \'1 год назад\')"><button type="submit" class="button button-contactForm" style="height: 22px;width: 24px;padding: 0;">«</button></a> ',
+        '<strong><u><a href="javascript:enterGYear()" class=tit onmouseover="return setTip(this, \'Выбрать грегорианский год\')">',
+        date2str(cal.getGregorian(), 2),
+        '</a></u></strong>',
+        ' <a href="javascript:incGYear(+1)" class=tit title="1 год вперёд" onmouseover="return setTip(this, \'1 год вперёд\')"><button type="submit" class="button button-contactForm" style="height: 22px;width: 24px;padding: 0;">»</button></a>'
+        );
+    
+        writeln('</td>');
+    
+        // jewish title
+        writeln('<td width="50%">');
+    
+        // menu for jewish months
+        writeln('<div id="jmmenu" style="width:20ex; position:absolute; visibility:hidden"><br>');
+        for(var i=TISHREY; i<=(leap?ADAR_2:ADAR); i++)
+        {	if( i!=cal.getJMonth() )
+            {	writeln('<div style="width:11ex; background-color:#b28540; color:white; border:solid black 1px; font-weight:400; paddin:0; margin:0; cursor:hand" onClick="changeJMonth('+i+')" onMouseOver="style.backgroundColor=\'#f6f0e2\';style.color=\'black\';style.borderColor=\'white\';style.fontWeight=\'800\'" onMouseOut="style.backgroundColor=\'#b28540\';style.color=\'white\';style.borderColor=\'black\';style.fontWeight=\'400\'">', JEWISH_MONTHS[leap][i], '</div>');
+            }	else
+            {	writeln('<div style="width:11ex; background-color:white; color:red; border:solid black 1px; font-weight:400; paddin:0; margin:0; cursor:default">', JEWISH_MONTHS[leap][i], '</div>');
+            }
+        }
+        for(var i=NISAN; i<=ELUL; i++)
+        {	if( i!=cal.getJMonth() )
+            {	writeln('<div style="width:11ex; background-color:#b28540; color:white; border:solid black 1px; font-weight:400; paddin:0; margin:0; cursor:hand" onClick="changeJMonth('+i+')" onMouseOver="style.backgroundColor=\'#f6f0e2\';style.color=\'black\';style.borderColor=\'silver\';style.fontWeight=\'800\'" onMouseOut="style.backgroundColor=\'#b28540\';style.color=\'white\';style.borderColor=\'black\';style.fontWeight=\'400\'">', JEWISH_MONTHS[leap][i], '</div>');
+            }	else
+            {	writeln('<div style="width:11ex; background-color:white; color:#b28540; border:solid black 1px; font-weight:400; paddin:0; margin:0; cursor:default">', JEWISH_MONTHS[leap][i], '</div>');
+            }
+        }
+        writeln('</div>');
+    
+        // jewish month
+        writeln(
+        '<a href="javascript:incJMonth(-1)" class=tit title="1 месяц назад" onmouseover="return setTip(this, \'1 месяц назад\')"><button type="submit" class="button button-contactForm" style="height: 22px;width: 24px;padding: 0;">«</button></a> ',
+        '<strong><u><a href="javascript:showJMonthsMenu()" class=tit onmouseover="return setTip(this, \'Выбрать еврейский месяц\')">',
+        JEWISH_MONTHS[leap][cal.getJMonth()],
+        '</a></u></strong>',
+        ' <a href="javascript:incJMonth(+1)" class=tit title="1 месяц вперёд" onmouseover="return setTip(this, \'1 месяц вперёд\')"><button type="submit" class="button button-contactForm" style="height: 22px;width: 24px;padding: 0;">»</button></a>'
+        );
+    
+        // jewish year
+        writeln(
+        ' — <a href="javascript:incJYear(-1)" class=tit title="1 год назад" onmouseover="return setTip(this, \'1 год назад\')"><button type="submit" class="button button-contactForm" style="height: 22px;width: 24px;padding: 0;">«</button></a> ',
+        '<strong><u><a href="javascript:enterJYear()" class=tit onmouseover="return setTip(this, \'Выбрать еврейский год\')">',
+        cal.getJYear()>0? (cal.getJYear()) : (-cal.getJYear()+1+" "+BCr),
+        '</a></u></strong>',
+        ' <a href="javascript:incJYear(+1)" class=tit title="1 год вперёд" onmouseover="return setTip(this, \'1 год вперёд\')"><button type="submit" class="button button-contactForm" style="height: 22px;width: 24px;padding: 0;">»</button></a>'
+        );
+    
+        writeln('</td>');
+    
+        writeln('</tr></table>');
+    }
+    
+    with( document )
+    {	/* generate the calendar */
+
+writeln('<table width=98% border=2 align=center bgcolor=white style=border-color:white cols=7>');
+
+{	writeln('<tr>');
+    for(var j=SUN; j<=SAT; j++)
+    {	writeln('<th width="14%" bgcolor="#b28540" style="color:white;padding:5px;"><tt><b style="text-transform: uppercase">');
+        writeln(WEEKDAYS[j]);
+        writeln('</b></tt></th>');
+    }
+    writeln('</tr>');
+}
+
+var day  = -cal.getGregorian().getDay()+1; // day of month
+var weeks = cal.getGregorian().getDay()==SAT && cal.getJMonthInfo().days==30 ? 6 : 5; // amount of rows in table
+
+for(var i=0; i<weeks; i++)
+{	writeln('<tr>');
+    for(var j=0; j<=6; j++, day++)
+    {	if( day>0 && day<=cal.getJMonthInfo().days)
+        {	var isToday = cal.getJYear()==today.getJYear() &&
+                cal.getJMonth()==today.getJMonth() && day==today.getJDate();
+            var gregorian = new Date(cal.getGregorian().getTime()+(day-1)*24*60*60*1000);
+            var holy = getHolyday(day, cal.getJMonth(), j, cal.getJYearInfo().days);
+            var format = gregorian.getFullYear()==cal.getGYear()==1? 3 : 4;
+
+            writeln('<td width="14%" valign=top style="background-color:'+(isToday? 'yellow' : (j == SAT ? 'rgba(205, 92, 92, 0.75)':'#f6f0e2'))+';padding: 5px;height: 115px; border-bottom:'+(isToday?'5px solid red':'none')+'">');
+            writeln('<table border=0 width=100% height=100%>');
+            writeln('<tr>');
+            writeln('<td align=left valign=top ><font size="4" style="font-weight:bolder;font-family:EB Garamond,serif;">', date2str(gregorian, format), '</font></td>');
+            writeln('<td align=right valign=top >', j==SAT||holy.indexOf("red")!=-1? ('<font color=red>') : ('<font color=#940606>'),JEWISH_MONTHS[leap][cal.getJMonth()] + "  " + day, '</font></td>');
+            writeln('</tr>');
+            if( holy )
+            {	writeln('<tr>');
+                writeln('<td colspan=2 align=right>', holy, '</td>');
+                writeln('</tr>');
+            }
+            writeln('</table>');
+        }	else
+        {	writeln('<td width="14%" valign=top>');
+        }
+        writeln('</td>');
+    }
+    writeln('</tr>');
+}
+
+writeln('</table>');
+    }
+    
+    with( document )
+    {	/* print information on this year and month */
+    
+        var this_month = JEWISH_MONTHS[cal.getJYearInfo().months==12?0:1][cal.getJMonth()];
+    
+        writeln('<br>');
+    
+        writeln(
+        'Информация на месяц ' + this_month + ':<br>',
+        '<span title="Молад - среднее новолуние" style="cursor:help">Молад</span> месяца ',
+        this_month + ': ',
+        date2str(cal.getJMonthInfo().molad, 1),
+        '<br>',
+        'Знак Зодиака месяца ' + this_month + ': ',
+        ZODIAC[cal.getJMonth()],
+        '<br><br>',
+    
+        'Информация на год ' + cal.getJYear() + ':<br>',
+        '<span title="Молад - среднее новолуние" style="cursor:help">Молад</span> месяца ',
+        JEWISH_MONTHS[0][TISHREY] + ' в этом году: ',
+        date2str(cal.getJYearInfo().molad, 1),
+        '<br>',
+        '<span title="Рош ^а-Шана - еврейский новый год" style="cursor:help">Рош &#293;а-Шана</span>: ',
+        date2str(cal.getJYearInfo().roshHaShana, 0),
+        '<br>',
+        'В этом году ', cal.getJYearInfo().months, ' месяцев и ', cal.getJYearInfo().days, (cal.getJYearInfo().days%10==5? ' дней ' : ' дня '),
+        '(', (cal.getJYearInfo().months==12? 'простой' : 'високосный'), ', ', (cal.getJYearInfo().days%10==3? 'неполный' : (cal.getJYearInfo().days%10==4? '"по порядку"' : 'полный')), ')'
+        );
+    
+        // shmita
+        writeln(
+        '<table border=0><tr>',
+        '<td>7-летний период "шмита":&nbsp;</td>',
+        '<td><table border="0"><tr>'
+        );
+        for(var i=1; i<=7; i++)
+        {	writeln(i==cal.getJYearInfo().shmita? ('<td bgcolor=yellow style=text-align:center>') : ('<td style=text-align:center>'), '<tt><b style="font-size:14px">', i==7? ('Ш') : (i), '</b></tt>', '</td>');
+        }
+        writeln(
+        '</tr></table></td>',
+        '</tr></table>'
+        );
+
+        // -------------- CONVERTER -------------------- //
+        let gregorianDaysOfConverter = [];
+        for (let i = 1; i <= 31; i++) {
+            gregorianDaysOfConverter.push(`<option>${i}</option>`)
+        }
+
+        
+        let grigorianMonthOfConverter = [];
+        for (let i = 0; i <= 11; i++) {
+            grigorianMonthOfConverter.push(`<option>${GREG_MONTHS_ROD[i]}</option>`)
+        }
+
+        let jewishDaysOfConverter = [];
+        for (let i = 1; i <= 30; i++) {
+            jewishDaysOfConverter.push(`<option>${i}</option>`)
+        }
+
+        let allJewishMonthes = ['Тишрея', 'Хешвана', 'Кислева', 'Тевета', 'Швата', 'Адара', 'Адара I', 'Адара II', 'Нисана', 'Ияра', 'Сивана', 'Таммуза', 'Ава', 'Элуля'];
+        let jewishMonthOfConverter = [];
+        for (let i = 0; i <= 13; i++) {
+            jewishMonthOfConverter.push(`<option>${allJewishMonthes[i]}</option>`)
+        }
+
+        // writeln(
+        //     '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 40px">',
+        //         '<h2 style="font-size: 20px; color: #0e53b2; padding-bottom: 10px; border-bottom: 3px solid #0e53b2;">Конвертер дат</h2>',
+        //         '<div>',
+        //             '<select style="padding: 7px 8px 6px; font-size: 27px; color: 001a7c; border: 1px solid #dcdcdc;">',
+        //                 `${gregorianDaysOfConverter}`,
+        //             '</select>',
+        //             '<select style="padding: 7px 8px 6px; font-size: 27px; color: 001a7c; border: 1px solid #dcdcdc;">',
+        //                 `${grigorianMonthOfConverter}`,
+        //             '</select>',
+        //             '<input type="number" style="padding: 8px 8px 6px; font-size: 27px; color: 001a7c; border: 1px solid #dcdcdc; max-width: 95px;" value="2024"/>',
+        //         '</div>',
+        //         '<div style="display: flex; column-gap: 26px; justify-content: center">',
+        //             '<p style="padding: 6px 10px; font-size: 36px; color: white; background-color: #b38d39; max-width: 38px; text-align: center; cursor: pointer">&darr;</p>',
+        //             '<p style="padding: 6px 10px; font-size: 36px; color: white; background-color: #b38d39; max-width: 38px;  text-align: center; cursor: pointer">&uarr;</p>',
+        //         '</div>', 
+        //         '<div>',
+        //             '<select style="padding: 7px 8px 6px; font-size: 27px; color: #a91313; border: 1px solid #dcdcdc;">',
+        //                 `${jewishDaysOfConverter}`,
+        //             '</select>',
+        //             '<select style="padding: 7px 8px 6px; font-size: 27px; color: #a91313; border: 1px solid #dcdcdc;">',
+        //                 `${jewishMonthOfConverter}`,
+        //             '</select>',
+        //             '<input type="number" style="padding: 8px 8px 6px; font-size: 27px; color: 001a7c; border: 1px solid #dcdcdc; max-width: 95px;" value="5784"/>',
+        //         '</div>',
+        //     '</div>',
+        // )
+    }
+    </script>
+    
